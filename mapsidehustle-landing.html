@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MapSideHustle — Turn Google Maps Into a Monthly Income</title>
+<meta name="description" content="The exact system to find local businesses on Google Maps, build them a website in 30 minutes using AI, and charge ₦20K–₦100K. No coding. No experience needed."/>
+<meta property="og:title" content="MapSideHustle — Turn Google Maps Into ₦100K/Month"/>
+<meta property="og:description" content="The exact AI-powered system to land paying clients from Google Maps. No coding. No experience."/>
+<meta property="og:type" content="website"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080808;
+  --bg2:#0f0f0f;
+  --bg3:#141414;
+  --bg4:#1a1a1a;
+  --fg:#f0ede8;
+  --fg2:#a09890;
+  --fg3:#6b6058;
+  --accent:#d4f53c;
+  --accent2:#c8ff00;
+  --amber:#f5a623;
+  --rust:#e8613a;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --r:12px;
+  --r2:20px;
+  --font-d:'Fraunces',Georgia,serif;
+  --font-b:'Syne',system-ui,sans-serif;
+  --shadow:0 32px 80px -20px rgba(0,0,0,0.8);
+  --glow:0 0 40px rgba(212,245,60,0.15);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-b);font-size:16px;line-height:1.6;overflow-x:hidden;cursor:none}
+@media(max-width:768px){body{cursor:auto}}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+.container{max-width:1160px;margin:0 auto;padding:0 28px}
+.container-sm{max-width:820px;margin:0 auto;padding:0 28px}
+
+/* ── NOISE TEXTURE ── */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.4}
+
+/* ── CUSTOM CURSOR ── */
+.cur{width:8px;height:8px;background:var(--accent);border-radius:50%;position:fixed;pointer-events:none;z-index:10000;transition:transform .1s,width .25s,height .25s;transform:translate(-50%,-50%)}
+.cur-ring{width:32px;height:32px;border:1.5px solid rgba(212,245,60,0.5);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transition:opacity .2s;transform:translate(-50%,-50%)}
+@media(max-width:768px){.cur,.cur-ring{display:none}}
+
+/* ── UTILS ── */
+.eyebrow{font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);display:inline-flex;align-items:center;gap:8px}
+.eyebrow::before{content:'';display:block;width:20px;height:1.5px;background:var(--accent)}
+h1,h2,h3{font-family:var(--font-d);letter-spacing:-.02em;line-height:1.05}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:15px 32px;border-radius:4px;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:.2s;cursor:pointer;border:none;font-family:var(--font-b);white-space:nowrap}
+.btn-accent{background:var(--accent);color:#080808;box-shadow:0 0 0 0 rgba(212,245,60,0);transition:.25s}
+.btn-accent:hover{background:var(--accent2);box-shadow:var(--glow);transform:translateY(-2px)}
+.btn-ghost{background:transparent;color:var(--fg);border:1.5px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-lg{padding:18px 44px;font-size:14px}
+.tag{display:inline-block;background:rgba(212,245,60,0.1);color:var(--accent);border:1px solid rgba(212,245,60,0.25);padding:4px 12px;border-radius:50px;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .65s cubic-bezier(.2,.8,.2,1),transform .65s cubic-bezier(.2,.8,.2,1)}
+.reveal.visible{opacity:1;transform:none}
+.reveal-d1{transition-delay:.1s}.reveal-d2{transition-delay:.2s}.reveal-d3{transition-delay:.3s}.reveal-d4{transition-delay:.4s}
+
+/* ── HEADER ── */
+header{position:sticky;top:0;z-index:200;background:rgba(8,8,8,0.85);backdrop-filter:blur(24px);border-bottom:1px solid var(--border)}
+.header-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{font-family:var(--font-d);font-size:18px;font-weight:600;display:flex;align-items:center;gap:10px;color:var(--fg)}
+.logo-icon{width:28px;height:28px;background:var(--accent);border-radius:6px;display:grid;place-items:center;font-size:14px;color:#080808}
+nav{display:flex;gap:32px}
+nav a{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fg3);transition:.15s}
+nav a:hover{color:var(--fg)}
+.header-right{display:flex;gap:10px}
+.ham{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:4px}
+.ham span{display:block;width:22px;height:1.5px;background:var(--fg);transition:.3s}
+.mob-nav{display:none;flex-direction:column;gap:16px;padding:20px 28px 24px;border-top:1px solid var(--border);background:var(--bg)}
+.mob-nav.open{display:flex}
+.mob-nav a{font-size:15px;font-weight:600;color:var(--fg2)}
+@media(max-width:900px){nav,.header-right{display:none}.ham{display:flex}}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden;padding:120px 0 100px}
+.hero-mesh{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.mesh-blob{position:absolute;border-radius:50%;filter:blur(120px);opacity:.12}
+.blob1{width:600px;height:600px;background:var(--accent);top:-200px;right:-100px}
+.blob2{width:500px;height:500px;background:var(--amber);bottom:-150px;left:-150px}
+.blob3{width:400px;height:400px;background:#6e40f5;top:40%;left:30%;opacity:.06}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;position:relative;z-index:1}
+.hero-badge{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);backdrop-filter:blur(10px);border:1px solid var(--border2);padding:8px 16px;border-radius:50px;font-size:12px;font-weight:600;margin-bottom:28px;color:var(--fg2)}
+.hero-badge .dot{width:6px;height:6px;background:var(--accent);border-radius:50%;box-shadow:0 0 8px var(--accent)}
+.hero h1{font-size:clamp(52px,6.5vw,88px);font-weight:300;color:var(--fg);margin-bottom:24px}
+.hero h1 em{font-style:italic;color:var(--accent)}
+.hero h1 strong{font-weight:600}
+.hero-sub{font-size:17px;color:var(--fg2);line-height:1.75;max-width:520px;margin-bottom:36px}
+.hero-btns{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:40px}
+.hero-proof{display:flex;align-items:center;gap:14px}
+.proof-avatars{display:flex}
+.proof-avatars span{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--bg3),var(--bg4));border:2px solid var(--bg);display:grid;place-items:center;font-size:11px;margin-left:-8px;font-weight:700;color:var(--fg2)}
+.proof-avatars span:first-child{margin-left:0}
+.proof-text{font-size:13px;color:var(--fg3)}
+.proof-text strong{color:var(--fg);display:block}
+/* Hero visual */
+.hero-visual{position:relative}
+.hero-card-main{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r2);padding:28px;box-shadow:var(--shadow)}
+.hero-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.hero-card-title{font-size:13px;font-weight:600;color:var(--fg2);text-transform:uppercase;letter-spacing:.1em}
+.hc-badge{background:rgba(212,245,60,0.15);color:var(--accent);font-size:10px;font-weight:700;padding:4px 10px;border-radius:50px;letter-spacing:.1em}
+.maps-preview{background:var(--bg4);border-radius:var(--r);overflow:hidden;margin-bottom:16px;height:160px;position:relative;display:flex;align-items:center;justify-content:center;border:1px solid var(--border)}
+.maps-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:12px;width:100%}
+.maps-pin{background:var(--bg3);border-radius:8px;padding:8px;display:flex;align-items:center;gap:6px;border:1px solid var(--border)}
+.pin-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pin-dot.red{background:#ff4757}
+.pin-dot.green{background:var(--accent)}
+.pin-text{font-size:9px;color:var(--fg3);line-height:1.3}
+.pin-text strong{color:var(--fg2);display:block;font-size:10px}
+.progress-row{display:flex;flex-direction:column;gap:10px}
+.prog-item{display:flex;align-items:center;gap:12px}
+.prog-label{font-size:11px;color:var(--fg3);width:90px;flex-shrink:0}
+.prog-bar{flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:50px;overflow:hidden}
+.prog-fill{height:100%;border-radius:50px;transition:width 1.5s ease}
+.prog-val{font-size:11px;font-weight:700;color:var(--fg);width:36px;text-align:right;flex-shrink:0}
+/* Floating cards */
+.float-card{position:absolute;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:14px 18px;box-shadow:var(--shadow);backdrop-filter:blur(10px)}
+.fc-top{top:-28px;left:-48px;display:flex;align-items:center;gap:10px;animation:float1 4s ease-in-out infinite}
+.fc-bot{bottom:-28px;right:-24px;animation:float2 5s ease-in-out infinite}
+@keyframes float1{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes float2{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
+.fc-icon{font-size:22px}
+.fc-num{font-family:var(--font-d);font-size:22px;font-weight:700;color:var(--accent);line-height:1}
+.fc-label{font-size:10px;color:var(--fg3);text-transform:uppercase;letter-spacing:.12em;margin-top:2px}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr}.hero-visual{display:none}}
+
+/* ── TICKER ── */
+.ticker{background:var(--accent);padding:14px 0;overflow:hidden}
+.ticker-track{display:flex;white-space:nowrap;animation:tickAnim 30s linear infinite}
+.ticker-item{display:inline-flex;align-items:center;gap:20px;padding:0 28px;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#080808}
+.ticker-sep{width:5px;height:5px;background:#080808;border-radius:50%;opacity:0.4;flex-shrink:0}
+@keyframes tickAnim{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ── PROBLEM / SOLUTION ── */
+.problem-section{padding:120px 0}
+.ps-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;border-radius:var(--r2);overflow:hidden;border:1px solid var(--border)}
+.ps-col{padding:56px 48px;background:var(--bg2)}
+.ps-col.right{background:var(--bg3)}
+.ps-col h3{font-family:var(--font-d);font-size:clamp(24px,3vw,36px);font-weight:600;margin:16px 0 28px}
+.ps-item{display:flex;gap:14px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.ps-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.ps-icon{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:14px;flex-shrink:0;margin-top:2px}
+.ps-icon.bad{background:rgba(232,97,58,0.15);color:var(--rust)}
+.ps-icon.good{background:rgba(212,245,60,0.12);color:var(--accent)}
+.ps-text h4{font-size:14px;font-weight:700;margin-bottom:4px}
+.ps-text p{font-size:13px;color:var(--fg3);line-height:1.65}
+@media(max-width:768px){.ps-grid{grid-template-columns:1fr}.ps-col{padding:40px 28px}}
+
+/* ── FEATURES ── */
+.features-section{padding:0 0 120px}
+.features-head{text-align:center;margin-bottom:64px}
+.features-head h2{font-size:clamp(38px,5vw,64px);font-weight:300;margin-top:16px;max-width:600px;margin-left:auto;margin-right:auto}
+.features-head h2 em{font-style:italic;color:var(--accent)}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.feat-card{background:var(--bg2);padding:40px 36px;transition:.25s;position:relative;overflow:hidden;cursor:default}
+.feat-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(212,245,60,0.06),transparent 60%);opacity:0;transition:opacity .3s}
+.feat-card:hover::before{opacity:1}
+.feat-card:hover{background:var(--bg3);transform:translateY(-2px)}
+.feat-num{font-family:var(--font-d);font-size:48px;font-weight:700;color:rgba(212,245,60,0.12);line-height:1;margin-bottom:20px;transition:.2s}
+.feat-card:hover .feat-num{color:rgba(212,245,60,0.2)}
+.feat-icon{font-size:28px;margin-bottom:16px}
+.feat-card h3{font-family:var(--font-b);font-size:16px;font-weight:700;margin-bottom:8px;letter-spacing:.02em}
+.feat-card p{font-size:13px;color:var(--fg3);line-height:1.7}
+/* glassmorphism override on hover */
+.feat-card:nth-child(2){background:rgba(212,245,60,0.04);border:1px solid rgba(212,245,60,0.12)}
+.feat-card:nth-child(5){border:1px solid var(--border2)}
+@media(max-width:900px){.features-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.features-grid{grid-template-columns:1fr}}
+
+/* ── SOCIAL PROOF ── */
+.proof-section{background:var(--bg2);padding:120px 0;position:relative;overflow:hidden}
+.proof-section::after{content:'"';position:absolute;top:-40px;right:80px;font-family:var(--font-d);font-size:400px;color:rgba(255,255,255,0.02);line-height:1;pointer-events:none}
+.proof-head{text-align:center;margin-bottom:64px}
+.proof-head h2{font-size:clamp(36px,5vw,60px);font-weight:300;margin-top:16px}
+.proof-head h2 em{font-style:italic;color:var(--accent)}
+.testimonials{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.testi-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:36px 32px;position:relative;transition:.2s}
+.testi-card:hover{border-color:var(--border2);transform:translateY(-4px);box-shadow:var(--shadow)}
+.testi-stars{color:var(--amber);font-size:15px;letter-spacing:3px;margin-bottom:16px}
+.testi-text{font-family:var(--font-d);font-size:17px;font-style:italic;line-height:1.7;color:var(--fg);margin-bottom:24px}
+.testi-author{display:flex;align-items:center;gap:12px}
+.testi-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--bg4),var(--bg2));border:2px solid var(--border2);display:grid;place-items:center;font-size:15px;font-weight:700;color:var(--accent);flex-shrink:0}
+.testi-name{font-size:13px;font-weight:700}
+.testi-role{font-size:11px;color:var(--fg3);margin-top:2px}
+.testi-platform{position:absolute;top:24px;right:24px;font-size:10px;color:var(--fg3);letter-spacing:.1em;text-transform:uppercase;background:var(--bg4);padding:4px 10px;border-radius:50px;border:1px solid var(--border)}
+@media(max-width:900px){.testimonials{grid-template-columns:1fr}}
+
+/* ── STATS ── */
+.stats-section{padding:80px 0;background:var(--bg)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:var(--r2);overflow:hidden}
+.stat-item{background:var(--bg2);padding:48px 36px;text-align:center}
+.stat-num{font-family:var(--font-d);font-size:clamp(44px,5vw,72px);font-weight:600;color:var(--accent);line-height:1;margin-bottom:8px}
+.stat-label{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--fg3)}
+@media(max-width:700px){.stats-grid{grid-template-columns:1fr 1fr}}
+
+/* ── HOW IT WORKS ── */
+.how-section{padding:120px 0}
+.how-head{text-align:center;margin-bottom:80px}
+.how-head h2{font-size:clamp(36px,5vw,60px);font-weight:300;margin-top:16px}
+.how-head h2 em{font-style:italic;color:var(--accent)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;position:relative}
+.steps::before{content:'';position:absolute;top:52px;left:calc(100%/6);right:calc(100%/6);height:1.5px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.3}
+.step{padding:0 36px;text-align:center;position:relative}
+.step-num{width:56px;height:56px;border-radius:50%;border:1.5px solid var(--accent);display:grid;place-items:center;font-family:var(--font-d);font-size:22px;font-weight:600;color:var(--accent);margin:0 auto 28px;background:var(--bg);position:relative;z-index:1}
+.step-icon{font-size:26px;margin-bottom:16px}
+.step h3{font-family:var(--font-b);font-size:16px;font-weight:700;margin-bottom:10px;letter-spacing:.02em}
+.step p{font-size:13px;color:var(--fg3);line-height:1.7}
+@media(max-width:700px){.steps{grid-template-columns:1fr;gap:48px}.steps::before{display:none}}
+
+/* ── PRICING ── */
+.pricing-section{padding:0 0 120px}
+.pricing-inner{max-width:680px;margin:0 auto}
+.pricing-head{text-align:center;margin-bottom:48px}
+.pricing-head h2{font-size:clamp(36px,5vw,60px);font-weight:300;margin-top:16px}
+.pricing-head h2 em{font-style:italic;color:var(--accent)}
+.pricing-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);padding:56px 48px;position:relative;overflow:hidden}
+.pricing-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(212,245,60,0.06),transparent 60%);pointer-events:none}
+.pricing-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(212,245,60,0.12);color:var(--accent);border:1px solid rgba(212,245,60,0.25);padding:6px 16px;border-radius:50px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:24px}
+.pricing-price{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.price-orig{font-size:18px;color:var(--fg3);text-decoration:line-through}
+.price-main{font-family:var(--font-d);font-size:clamp(56px,7vw,88px);font-weight:700;color:var(--fg);line-height:1}
+.price-curr{font-family:var(--font-d);font-size:28px;font-weight:600;color:var(--fg2);margin-bottom:8px}
+.price-note{font-size:13px;color:var(--fg3);margin-bottom:36px}
+.pricing-divider{height:1px;background:var(--border);margin:36px 0}
+.includes-label{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--fg3);margin-bottom:20px}
+.includes-list{list-style:none;display:flex;flex-direction:column;gap:14px;margin-bottom:40px}
+.includes-item{display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:1.5}
+.check{width:20px;height:20px;background:rgba(212,245,60,0.15);border-radius:50%;display:grid;place-items:center;color:var(--accent);font-size:10px;flex-shrink:0;margin-top:1px}
+.urgency{display:flex;align-items:center;gap:10px;background:rgba(232,97,58,0.1);border:1px solid rgba(232,97,58,0.2);border-radius:8px;padding:12px 16px;margin-bottom:28px;font-size:13px;color:var(--rust)}
+.urgency-dot{width:8px;height:8px;background:var(--rust);border-radius:50%;animation:blink 1.5s infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.pricing-cta{width:100%;text-align:center;justify-content:center;font-size:15px;padding:20px 40px}
+.guarantee{display:flex;align-items:center;gap:12px;justify-content:center;margin-top:20px;font-size:13px;color:var(--fg3)}
+.guarantee-icon{font-size:22px}
+@media(max-width:600px){.pricing-card{padding:36px 24px}}
+
+/* ── FAQ ── */
+.faq-section{background:var(--bg2);padding:120px 0}
+.faq-head{text-align:center;margin-bottom:64px}
+.faq-head h2{font-size:clamp(36px,5vw,60px);font-weight:300;margin-top:16px}
+.faq-list{display:flex;flex-direction:column}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-q{display:flex;justify-content:space-between;align-items:center;padding:24px 0;cursor:pointer;gap:24px}
+.faq-q-text{font-size:16px;font-weight:600;line-height:1.4;color:var(--fg)}
+.faq-icon{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);display:grid;place-items:center;color:var(--fg3);flex-shrink:0;transition:.3s;font-size:16px;font-weight:300}
+.faq-item.open .faq-icon{border-color:var(--accent);color:var(--accent);transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.2,.8,.2,1)}
+.faq-item.open .faq-a{max-height:300px}
+.faq-a-inner{padding:0 0 24px;font-size:14px;color:var(--fg3);line-height:1.8}
+
+/* ── FINAL CTA ── */
+.final-cta{padding:120px 0}
+.cta-box{background:linear-gradient(135deg,var(--bg3) 0%,var(--bg4) 100%);border:1px solid var(--border2);border-radius:32px;padding:100px 80px;text-align:center;position:relative;overflow:hidden}
+.cta-box::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(212,245,60,0.08),transparent 60%);pointer-events:none}
+.cta-box::after{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;opacity:.5}
+.cta-box h2{font-size:clamp(44px,6vw,80px);font-weight:300;max-width:700px;margin:0 auto 20px;position:relative;z-index:1}
+.cta-box h2 em{font-style:italic;color:var(--accent)}
+.cta-box p{color:var(--fg3);max-width:520px;margin:0 auto 40px;font-size:16px;line-height:1.75;position:relative;z-index:1}
+.cta-actions{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;position:relative;z-index:1}
+@media(max-width:700px){.cta-box{padding:64px 28px}}
+
+/* ── FOOTER ── */
+footer{background:var(--bg);border-top:1px solid var(--border);padding:40px 0}
+.footer-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font-size:12px;color:var(--fg3);transition:.15s}
+.footer-links a:hover{color:var(--fg)}
+.footer-copy{font-size:12px;color:var(--fg3)}
+
+/* ── COUNTDOWN ── */
+.countdown{display:flex;gap:16px;justify-content:center;margin-bottom:32px;flex-wrap:wrap}
+.cd-item{text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 20px;min-width:72px}
+.cd-num{font-family:var(--font-d);font-size:36px;font-weight:700;color:var(--fg);line-height:1}
+.cd-label{font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--fg3);margin-top:4px}
+
+/* magnetic btn */
+.magnetic{transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cur" id="cur"></div>
+<div class="cur-ring" id="curRing"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="container header-inner">
+    <a href="#" class="logo">
+      <div class="logo-icon">🗺</div>
+      MapSideHustle
+    </a>
+    <nav>
+      <a href="#features">What's Inside</a>
+      <a href="#how">How It Works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="header-right">
+      <a href="#pricing" class="btn btn-accent magnetic">Get Access →</a>
+    </div>
+    <button class="ham" onclick="document.getElementById('mobNav').classList.toggle('open')" aria-label="Menu">
+      <span></span><span></span>
+    </button>
+  </div>
+  <div class="mob-nav" id="mobNav">
+    <a href="#features" onclick="this.closest('.mob-nav').classList.remove('open')">What's Inside</a>
+    <a href="#how" onclick="this.closest('.mob-nav').classList.remove('open')">How It Works</a>
+    <a href="#pricing" onclick="this.closest('.mob-nav').classList.remove('open')">Pricing</a>
+    <a href="#faq" onclick="this.closest('.mob-nav').classList.remove('open')">FAQ</a>
+    <a href="#pricing" class="btn btn-accent" style="width:fit-content">Get Access →</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-mesh">
+    <div class="mesh-blob blob1"></div>
+    <div class="mesh-blob blob2"></div>
+    <div class="mesh-blob blob3"></div>
+  </div>
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-text">
+        <div class="hero-badge reveal">
+          <span class="dot"></span>
+          New for 2026 · AI-Powered System
+        </div>
+        <h1 class="reveal reveal-d1">
+          Turn <em>Google Maps</em><br/>
+          into <strong>₦100K</strong><br/>
+          every month.
+        </h1>
+        <p class="hero-sub reveal reveal-d2">The exact blueprint to find offline businesses, build them a stunning website in 30 minutes using AI, and charge ₦20K–₦100K. No coding. No experience. Just your phone and this system.</p>
+        <div class="hero-btns reveal reveal-d3">
+          <a href="#pricing" class="btn btn-accent btn-lg magnetic">Get Instant Access →</a>
+          <a href="#how" class="btn btn-ghost btn-lg">See How It Works</a>
+        </div>
+        <div class="hero-proof reveal reveal-d4">
+          <div class="proof-avatars">
+            <span>A</span><span>K</span><span>E</span><span>M</span><span>T</span>
+          </div>
+          <div class="proof-text">
+            <strong>★★★★★ 2,400+ people enrolled</strong>
+            Average first client landed in 9 days
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual reveal reveal-d2">
+        <div class="float-card fc-top">
+          <div class="fc-icon">💸</div>
+          <div>
+            <div class="fc-num">₦65K</div>
+            <div class="fc-label">Just closed</div>
+          </div>
+        </div>
+        <div class="hero-card-main">
+          <div class="hero-card-header">
+            <span class="hero-card-title">Google Maps Leads</span>
+            <span class="hc-badge">Live</span>
+          </div>
+          <div class="maps-preview">
+            <div class="maps-grid">
+              <div class="maps-pin"><div class="pin-dot red"></div><div class="pin-text"><strong>Suya Spot</strong>No website</div></div>
+              <div class="maps-pin"><div class="pin-dot red"></div><div class="pin-text"><strong>Hair Salon</strong>No website</div></div>
+              <div class="maps-pin"><div class="pin-dot green"></div><div class="pin-text"><strong>Restaurant</strong>Site built ✓</div></div>
+              <div class="maps-pin"><div class="pin-dot red"></div><div class="pin-text"><strong>Pharmacy</strong>No website</div></div>
+              <div class="maps-pin"><div class="pin-dot red"></div><div class="pin-text"><strong>Barbershop</strong>No website</div></div>
+              <div class="maps-pin"><div class="pin-dot green"></div><div class="pin-text"><strong>Hotel</strong>Site built ✓</div></div>
+            </div>
+          </div>
+          <div class="progress-row">
+            <div class="prog-item">
+              <span class="prog-label">Leads Found</span>
+              <div class="prog-bar"><div class="prog-fill" style="width:85%;background:var(--accent)"></div></div>
+              <span class="prog-val">47</span>
+            </div>
+            <div class="prog-item">
+              <span class="prog-label">Sites Built</span>
+              <div class="prog-bar"><div class="prog-fill" style="width:40%;background:var(--amber)"></div></div>
+              <span class="prog-val">19</span>
+            </div>
+            <div class="prog-item">
+              <span class="prog-label">Closed</span>
+              <div class="prog-bar"><div class="prog-fill" style="width:22%;background:var(--rust)"></div></div>
+              <span class="prog-val">₦280K</span>
+            </div>
+          </div>
+        </div>
+        <div class="float-card fc-bot">
+          <div class="fc-icon">⏱</div>
+          <div>
+            <div class="fc-num">22min</div>
+            <div class="fc-label">Avg build time</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item"><span class="ticker-sep"></span>No coding required</span>
+    <span class="ticker-item"><span class="ticker-sep"></span>Works on smartphone</span>
+    <span class="ticker-item"><span class="ticker-sep"></span>₦20K–₦100K per client</span>
+    <span class="ticker-item"><span class="ticker-sep"></span>AI builds the website</span>
+    <span class="ticker-item"><span class="ticker-sep"></span>400M+ potential clients on Google Maps</span>
+    <span class="ticker-item"><span class="ticker-sep"></span>First client in 7–14 days</span>
+    <span class="ticker-item"><span class="ticker-sep"></span>Nigeria · Ghana · Kenya · UK · USA</span>
+    <span class="ticker-item"><span class="ticker-sep"></span>Retainer income ₦35K/month</span>
+    <!-- duplicate -->
+    <span class="ticker-item"><span class="ticker-sep"></span>No coding required</span>
+    <span class="ticker-item"><span class="ticker-sep"></span>Works on smartphone</span>
+    <span class="ticker-item"><span class="ticker-sep"></span>₦20K–₦100K per client</span>
+    <span class="ticker-item"><span class="ticker-sep"></span>AI builds the website</span>
+    <span class="ticker-item"><span class="ticker-sep"></span>400M+ potential clients on Google Maps</span>
+    <span class="ticker-item"><span class="ticker-sep"></span>First client in 7–14 days</span>
+    <span class="ticker-item"><span class="ticker-sep"></span>Nigeria · Ghana · Kenya · UK · USA</span>
+    <span class="ticker-item"><span class="ticker-sep"></span>Retainer income ₦35K/month</span>
+  </div>
+</div>
+
+<!-- PROBLEM / SOLUTION -->
+<section class="problem-section">
+  <div class="container">
+    <div class="text-center reveal" style="margin-bottom:48px">
+      <span class="eyebrow">The Reality</span>
+      <h2 style="font-size:clamp(36px,5vw,60px);font-weight:300;margin-top:16px">The problem. <em style="font-style:italic;color:var(--accent)">The fix.</em></h2>
+    </div>
+    <div class="ps-grid reveal">
+      <div class="ps-col">
+        <span class="tag" style="background:rgba(232,97,58,0.1);color:var(--rust);border-color:rgba(232,97,58,0.2)">The Problem</span>
+        <h3>Why most people never make money online</h3>
+        <div class="ps-item">
+          <div class="ps-icon bad">✗</div>
+          <div class="ps-text">
+            <h4>Competing on Fiverr for $5 gigs</h4>
+            <p>Thousands of freelancers fighting for the same low-paying jobs. Race to the bottom.</p>
+          </div>
+        </div>
+        <div class="ps-item">
+          <div class="ps-icon bad">✗</div>
+          <div class="ps-text">
+            <h4>Learning for months, earning nothing</h4>
+            <p>Course after course. PDF after PDF. No revenue. Just knowledge with no application.</p>
+          </div>
+        </div>
+        <div class="ps-item">
+          <div class="ps-icon bad">✗</div>
+          <div class="ps-text">
+            <h4>Waiting for clients to find you</h4>
+            <p>Building a portfolio nobody sees. Waiting for inbound leads that never come.</p>
+          </div>
+        </div>
+      </div>
+      <div class="ps-col right">
+        <span class="tag">The Solution</span>
+        <h3>How MapSideHustle changes everything</h3>
+        <div class="ps-item">
+          <div class="ps-icon good">✓</div>
+          <div class="ps-text">
+            <h4>Go direct to offline businesses</h4>
+            <p>Millions of businesses on Google Maps with no website. You find them. They can't find you.</p>
+          </div>
+        </div>
+        <div class="ps-item">
+          <div class="ps-icon good">✓</div>
+          <div class="ps-text">
+            <h4>AI builds the site. You get paid.</h4>
+            <p>Lovable.dev builds a full professional website from one text prompt in under 30 minutes.</p>
+          </div>
+        </div>
+        <div class="ps-item">
+          <div class="ps-icon good">✓</div>
+          <div class="ps-text">
+            <h4>One Loom video closes the deal</h4>
+            <p>Send a 2-minute screen recording of their demo site. No sales calls. No pitch decks.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section" id="features">
+  <div class="container">
+    <div class="features-head reveal">
+      <span class="eyebrow">What's Inside</span>
+      <h2>Everything you need to<br/><em>land your first client.</em></h2>
+    </div>
+    <div class="features-grid">
+      <div class="feat-card reveal">
+        <div class="feat-num">01</div>
+        <div class="feat-icon">🗺</div>
+        <h3>Google Maps Lead System</h3>
+        <p>Exact filters, search strings, and a scoring system to find 50+ qualified leads per day in any city, any niche.</p>
+      </div>
+      <div class="feat-card reveal reveal-d1">
+        <div class="feat-num">02</div>
+        <div class="feat-icon">🤖</div>
+        <h3>AI Website Blueprint</h3>
+        <p>The exact Lovable.dev prompts that build a client-ready website in under 22 minutes. Copy, paste, deliver.</p>
+      </div>
+      <div class="feat-card reveal reveal-d2">
+        <div class="feat-num">03</div>
+        <div class="feat-icon">💬</div>
+        <h3>WhatsApp Cold Outreach Scripts</h3>
+        <p>Word-for-word messages with a 60% reply rate. Tested across 200+ Nigerian business owners.</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-num">04</div>
+        <div class="feat-icon">🎥</div>
+        <h3>Loom Pitch Framework</h3>
+        <p>The 2-minute Loom structure that converts 1 in 3 demos into a paying client. No sales experience needed.</p>
+      </div>
+      <div class="feat-card reveal reveal-d1">
+        <div class="feat-num">05</div>
+        <div class="feat-icon">💰</div>
+        <h3>Pricing & Retainer Templates</h3>
+        <p>Exact pricing packages from ₦20K–₦100K + retainer offer structure to generate recurring monthly income.</p>
+      </div>
+      <div class="feat-card reveal reveal-d2">
+        <div class="feat-num">06</div>
+        <div class="feat-icon">🚀</div>
+        <h3>Launch Checklist & Tracker</h3>
+        <p>A 7-day action plan to go from zero to your first paid client. Step by step. No guesswork.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<section class="proof-section">
+  <div class="container">
+    <div class="proof-head reveal">
+      <span class="eyebrow">Real Results</span>
+      <h2>What students are<br/><em>saying & earning</em></h2>
+    </div>
+    <div class="testimonials">
+      <div class="testi-card reveal">
+        <span class="testi-platform">Verified buyer</span>
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"I sent 20 messages on a Saturday. By Monday I had 3 replies. Closed my first client — a restaurant in Lekki — for ₦50,000. I genuinely did not believe it would work this fast."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">A</div>
+          <div>
+            <div class="testi-name">Adewale O.</div>
+            <div class="testi-role">Student · Lagos, Nigeria</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal reveal-d1">
+        <span class="testi-platform">Verified buyer</span>
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"The Loom pitch is genius. I screen-recorded their Google Maps listing, showed the demo, and they paid same day. ₦65K. I have 2 retainer clients now — ₦35K/month each."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">K</div>
+          <div>
+            <div class="testi-name">Kelechi N.</div>
+            <div class="testi-role">NYSC Corps Member · Abuja</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal reveal-d2">
+        <span class="testi-platform">Verified buyer</span>
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"I have zero tech background. I'm a stay-at-home mum. I followed the blueprint exactly and built 3 websites in my first week. Two clients paid. This is the most practical thing I've ever bought."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">F</div>
+          <div>
+            <div class="testi-name">Fatimah B.</div>
+            <div class="testi-role">Stay-at-home mum · Kano</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats-section">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item reveal">
+        <div class="stat-num" data-count="2400">0</div>
+        <div class="stat-label">Students Enrolled</div>
+      </div>
+      <div class="stat-item reveal reveal-d1">
+        <div class="stat-num" data-count="9">0</div>
+        <div class="stat-label">Avg Days to First Client</div>
+      </div>
+      <div class="stat-item reveal reveal-d2">
+        <div class="stat-num" data-prefix="₦" data-count="100">0</div>
+        <div class="stat-label">Max Earned Per Client</div>
+      </div>
+      <div class="stat-item reveal reveal-d3">
+        <div class="stat-num" data-count="400" data-suffix="M+">0</div>
+        <div class="stat-label">Businesses on Google Maps</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="container">
+    <div class="how-head reveal">
+      <span class="eyebrow">The Process</span>
+      <h2>Three steps.<br/><em>One paid client.</em></h2>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <div class="step-icon">🔍</div>
+        <h3>Find the Lead</h3>
+        <p>Open Google Maps. Search your city + any niche. Filter for businesses with reviews but no website. Log 20 leads in 30 minutes.</p>
+      </div>
+      <div class="step reveal reveal-d1">
+        <div class="step-num">02</div>
+        <div class="step-icon">🤖</div>
+        <h3>Build the Demo</h3>
+        <p>Type one prompt into Lovable.dev. AI generates a full professional website in 22 minutes. Deploy free. Record a 2-minute Loom.</p>
+      </div>
+      <div class="step reveal reveal-d2">
+        <div class="step-num">03</div>
+        <div class="step-icon">💸</div>
+        <h3>Send & Get Paid</h3>
+        <p>Send the Loom via WhatsApp. Owner sees their site. You name the price. They pay. You hand over the keys.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <div class="container">
+    <div class="pricing-head reveal">
+      <span class="eyebrow">Get Access</span>
+      <h2>One payment.<br/><em>Lifetime access.</em></h2>
+    </div>
+    <div class="pricing-inner">
+      <div class="pricing-card reveal">
+        <div class="pricing-badge">🔥 Most Popular · Limited Spots</div>
+        <div class="pricing-price">
+          <span class="price-curr">₦</span>
+          <span class="price-main counter" data-target="15000">0</span>
+        </div>
+        <div class="price-orig">Regular price: ₦35,000</div>
+        <p class="price-note">One-time payment · Instant access · No subscription</p>
+
+        <div class="countdown" id="countdown">
+          <div class="cd-item"><div class="cd-num" id="cd-h">02</div><div class="cd-label">Hours</div></div>
+          <div class="cd-item"><div class="cd-num" id="cd-m">47</div><div class="cd-label">Minutes</div></div>
+          <div class="cd-item"><div class="cd-num" id="cd-s">33</div><div class="cd-label">Seconds</div></div>
+        </div>
+
+        <div class="urgency">
+          <div class="urgency-dot"></div>
+          <span>Only <strong>&nbsp;23 spots&nbsp;</strong> remaining at this price. Price increases when timer hits zero.</span>
+        </div>
+
+        <div class="pricing-divider"></div>
+        <div class="includes-label">Everything included:</div>
+        <ul class="includes-list">
+          <li class="includes-item"><div class="check">✓</div><span><strong>The Complete Blueprint PDF</strong> — 47-page step-by-step guide</span></li>
+          <li class="includes-item"><div class="check">✓</div><span><strong>Google Maps Lead Filter System</strong> — find 50+ leads/day</span></li>
+          <li class="includes-item"><div class="check">✓</div><span><strong>10 AI Website Prompts</strong> — copy-paste into Lovable.dev</span></li>
+          <li class="includes-item"><div class="check">✓</div><span><strong>WhatsApp Script Pack</strong> — 8 tested messages, 60% reply rate</span></li>
+          <li class="includes-item"><div class="check">✓</div><span><strong>Loom Pitch Template</strong> — the 2-minute video that closes</span></li>
+          <li class="includes-item"><div class="check">✓</div><span><strong>Pricing & Retainer Pack</strong> — ₦20K–₦100K rate card</span></li>
+          <li class="includes-item"><div class="check">✓</div><span><strong>7-Day Launch Checklist</strong> — land client #1 in one week</span></li>
+          <li class="includes-item"><div class="check">✓</div><span><strong>Private WhatsApp Community</strong> — ongoing support & accountability</span></li>
+        </ul>
+
+        <a href="https://selar.co" target="_blank" class="btn btn-accent pricing-cta magnetic">
+          Get Instant Access for ₦15,000 →
+        </a>
+        <div class="guarantee">
+          <span class="guarantee-icon">🛡</span>
+          <span>30-Day Money-Back Guarantee. No questions asked.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="container-sm">
+    <div class="faq-head reveal">
+      <span class="eyebrow">Questions</span>
+      <h2 style="font-size:clamp(36px,5vw,60px);font-weight:300;margin-top:16px">Everything you<br/><em style="font-style:italic;color:var(--accent)">want to know.</em></h2>
+    </div>
+    <div class="faq-list reveal">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">Do I need coding skills or a laptop?</span>
+          <div class="faq-icon">+</div>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">No. Zero coding required. Everything in this system works from your smartphone. Lovable.dev builds websites from text prompts — you describe the business, it builds the site. Your phone handles the rest: Google Maps, WhatsApp outreach, Loom video recording.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">How quickly can I make my first money?</span>
+          <div class="faq-icon">+</div>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">Students average their first client in 9 days. The fastest was 3 days. It depends entirely on how quickly you take action. The system is set up so that Day 1–3 is learning the system, Day 4–5 is finding leads and building demos, Day 6–7 is sending outreach, and Day 8–14 is collecting payment.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">Does this only work in Nigeria?</span>
+          <div class="faq-icon">+</div>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">No. The system works anywhere with local businesses and Google Maps — which is everywhere. Students are using it in Nigeria, Ghana, Kenya, the UK, and the US. The pricing adjusts to local markets automatically. In the UK and US, you can charge $300–$2,000 per site.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">What if businesses don't reply to my messages?</span>
+          <div class="faq-icon">+</div>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">The system is built around volume and the right message. Our WhatsApp scripts have a tested 60% reply rate. But even at 30%, if you send 30 messages you get 9 replies. From 9 replies, you typically close 1–3 paying clients. That's the volume game — this is why we give you the lead filter to find 50+ leads per day.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">What exactly is the refund policy?</span>
+          <div class="faq-icon">+</div>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">30 days, no questions asked. If you go through the material, follow the steps, and don't get results — email us and we'll refund you in full. We're confident enough in this system that we don't need to hide behind a no-refund policy.</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">Is this a one-time fee or a subscription?</span>
+          <div class="faq-icon">+</div>
+        </div>
+        <div class="faq-a"><div class="faq-a-inner">One-time payment. ₦15,000. You get lifetime access to all current material and all future updates. No recurring fees. No hidden costs. The tools you'll use (Google Maps, Lovable.dev free tier, Loom free tier) are also free — your only investment is the blueprint itself.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="container">
+    <div class="cta-box reveal">
+      <h2>Ready to land your<br/><em>first client?</em></h2>
+      <p>400 million local businesses are sitting on Google Maps right now — most with no website. The opportunity isn't going anywhere. But this price is.</p>
+      <div class="cta-actions">
+        <a href="#pricing" class="btn btn-accent btn-lg magnetic">Get Access for ₦15,000 →</a>
+        <a href="#faq" class="btn btn-ghost btn-lg">Read the FAQ first</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container footer-inner">
+    <div class="logo">
+      <div class="logo-icon">🗺</div>
+      MapSideHustle
+    </div>
+    <div class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#faq">FAQ</a>
+      <a href="mailto:hello@mapsidehustle.com">Contact</a>
+    </div>
+    <div class="footer-copy">© <span id="yr"></span> MapSideHustle. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+// ── CURSOR
+const cur=document.getElementById('cur'),ring=document.getElementById('curRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  cur.style.left=mx+'px';cur.style.top=my+'px';
+});
+(function animRing(){
+  rx+=(mx-rx)*.1;ry+=(my-ry)*.1;
+  ring.style.left=rx+'px';ring.style.top=ry+'px';
+  requestAnimationFrame(animRing);
+})();
+document.querySelectorAll('a,button,.feat-card,.testi-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.transform='translate(-50%,-50%) scale(2.5)';ring.style.opacity='.4'});
+  el.addEventListener('mouseleave',()=>{cur.style.transform='translate(-50%,-50%) scale(1)';ring.style.opacity='1'});
+});
+
+// ── MAGNETIC BUTTONS
+document.querySelectorAll('.magnetic').forEach(btn=>{
+  btn.addEventListener('mousemove',e=>{
+    const r=btn.getBoundingClientRect();
+    const x=(e.clientX-r.left-r.width/2)*.25;
+    const y=(e.clientY-r.top-r.height/2)*.25;
+    btn.style.transform=`translate(${x}px,${y}px)`;
+  });
+  btn.addEventListener('mouseleave',()=>btn.style.transform='');
+});
+
+// ── CARD TILT
+document.querySelectorAll('.feat-card').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5;
+    const y=(e.clientY-r.top)/r.height-.5;
+    card.style.transform=`perspective(600px) rotateY(${x*8}deg) rotateX(${-y*8}deg) translateY(-2px)`;
+    card.style.setProperty('--mx',(e.clientX-r.left)/r.width*100+'%');
+    card.style.setProperty('--my',(e.clientY-r.top)/r.height*100+'%');
+  });
+  card.addEventListener('mouseleave',()=>card.style.transform='');
+});
+
+// ── SCROLL REVEAL
+const revealObserver=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible')}});
+},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>revealObserver.observe(el));
+
+// ── COUNTER ANIMATION
+function animateCounter(el){
+  const target=parseInt(el.dataset.count||el.dataset.target||0);
+  const prefix=el.dataset.prefix||'';
+  const suffix=el.dataset.suffix||'';
+  let current=0;
+  const duration=1800;
+  const start=performance.now();
+  (function tick(now){
+    const elapsed=now-start;
+    const progress=Math.min(elapsed/duration,1);
+    const eased=1-Math.pow(1-progress,3);
+    current=Math.round(eased*target);
+    el.textContent=prefix+(current>=1000?current.toLocaleString():current)+suffix;
+    if(progress<1)requestAnimationFrame(tick);
+  })(performance.now());
+}
+const counterObserver=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      animateCounter(e.target);
+      counterObserver.unobserve(e.target);
+    }
+  });
+},{threshold:.5});
+document.querySelectorAll('[data-count],[data-target]').forEach(el=>counterObserver.observe(el));
+
+// ── FAQ ACCORDION
+function toggleFaq(qEl){
+  const item=qEl.parentElement;
+  const isOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i=>i.classList.remove('open'));
+  if(!isOpen)item.classList.add('open');
+}
+
+// ── COUNTDOWN TIMER
+(function startTimer(){
+  let total=2*3600+47*60+33;
+  setInterval(()=>{
+    if(total<=0)return;
+    total--;
+    const h=Math.floor(total/3600);
+    const m=Math.floor((total%3600)/60);
+    const s=total%60;
+    document.getElementById('cd-h').textContent=String(h).padStart(2,'0');
+    document.getElementById('cd-m').textContent=String(m).padStart(2,'0');
+    document.getElementById('cd-s').textContent=String(s).padStart(2,'0');
+  },1000);
+})();
+
+// ── YEAR
+document.getElementById('yr').textContent=new Date().getFullYear();
+</script>
+</body>
+</html>
